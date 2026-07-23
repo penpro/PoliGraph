@@ -69,7 +69,7 @@
     screen(
       '<section class="intro">' +
       '<h1>PoliGraph</h1>' +
-      '<p class="lede">A test of one thing: how readily you would use the power of the state to force other people to live the way you think they should.</p>' +
+      '<p class="lede">Take the test and find out which world leaders — past and present — your politics actually line up with.</p>' +
       '<ul class="rules">' +
       '<li>Answer honestly and fast — first instinct.</li>' +
       '<li>You cannot go back. That is the point.</li>' +
