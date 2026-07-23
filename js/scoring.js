@@ -75,5 +75,34 @@ window.PG_SCORING = (function () {
     return t.length > 60 ? t.slice(0, 57) + "…" : t;
   }
 
-  return { computeScores: computeScores, matchAlignments: matchAlignments, tier: tier, contradiction: contradiction };
+  /* Hypocrisy: within each consistency set, a principled person answers alike; the spread between
+     their answers (0..4) is the double standard. Score = average spread across answered sets, 0..100. */
+  function computeHypocrisy(answers) {
+    var byId = {};
+    D.QUESTIONS.forEach(function (q) { if (q.set) { (byId[q.set] = byId[q.set] || []).push(q); } });
+    var sets = [], spreads = [];
+    Object.keys(byId).forEach(function (sid) {
+      var items = byId[sid].map(function (q) { return { tag: q.setTag, id: q.id, r: answers[q.id] }; })
+        .filter(function (x) { return typeof x.r === "number"; });
+      if (items.length < 2) return;
+      var rs = items.map(function (x) { return x.r; });
+      var spread = Math.max.apply(null, rs) - Math.min.apply(null, rs);
+      spreads.push(spread);
+      sets.push({ id: sid, label: (D.SETS[sid] && D.SETS[sid].label) || sid, spread: spread, items: items });
+    });
+    var score100 = spreads.length
+      ? Math.round((spreads.reduce(function (a, b) { return a + b; }, 0) / spreads.length) / 4 * 100) : 0;
+    sets.sort(function (a, b) { return b.spread - a.spread; });
+    return { score100: score100, sets: sets, measured: spreads.length };
+  }
+
+  function hypoTier(s) {
+    if (s <= 20) return { name: "Principled", note: "You apply the same rule to your side and the other. Rare — most people don't." };
+    if (s <= 45) return { name: "Mostly consistent", note: "A wobble or two, but your principles mostly hold no matter who's in the frame." };
+    if (s <= 70) return { name: "Situational principles", note: "Your 'principles' bend noticeably depending on who's standing in front of them." };
+    return { name: "Pure team sport", note: "You don't have principles here — you have a side, and the rule just follows it." };
+  }
+
+  return { computeScores: computeScores, matchAlignments: matchAlignments, tier: tier, contradiction: contradiction,
+           computeHypocrisy: computeHypocrisy, hypoTier: hypoTier };
 })();

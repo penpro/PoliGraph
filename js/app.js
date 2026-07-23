@@ -7,8 +7,12 @@
 
   /* The short test = 4 balanced items per axis. The long test = the whole bank (~12/axis). */
   var CORE_IDS = [
-    "cm1","cm2","cm3","cm7", "ec1","ec2","ec3","ec4", "ad1","ad2","ad3","ad4",
-    "op1","op2","op3","op4", "ri1","ri2","ri3","ri4", "pd1","pd2","pd3","pd4"
+    "cm1","cm2","cm3","cm4",
+    "ec1","ec2","pv_a","pv_b",
+    "ab_a","ab_b","ad1","ad6",
+    "dl_a","dl_b","op1","op3",
+    "dp_a","dp_b","ri1","ri4",
+    "pd1","pd2","pd3","pd6"
   ];
   function questionsFor(m) {
     var list = m === "long" ? D.QUESTIONS.slice()
@@ -135,9 +139,10 @@
   /* ---------- Quiz ---------- */
   function question() {
     var q = order[idx];
-    var stmt = q.type === "quote"
-      ? '<blockquote class="quote">“' + q.quote + '”</blockquote><p class="qprompt">' + q.prompt + '</p>'
-      : '<p class="qprompt big">' + q.prompt + '</p>';
+    var stmt = "";
+    if (q.story) stmt += '<div class="story">' + q.story + '</div>';
+    if (q.type === "quote") stmt += '<blockquote class="quote">“' + q.quote + '”</blockquote><p class="qprompt">' + q.prompt + '</p>';
+    else stmt += '<p class="qprompt' + (q.story ? '' : ' big') + '">' + q.prompt + '</p>';
     var opts = D.OPTIONS.map(function (o) {
       return '<button class="opt" data-v="' + o.value + '">' + o.label + '</button>';
     }).join("");
@@ -167,6 +172,7 @@
     var t = S.tier(result.overall100);
     var matches = S.matchAlignments(result.vec, 3);
     var contra = S.contradiction(answers);
+    var hypo = S.computeHypocrisy(answers);
     lastResult = result; lastMatches = matches;
     lastHigh = D.AXES.filter(function (a) { return result.scores[a.key].score100 >= 60; });
     lastLow = D.AXES.filter(function (a) { return result.scores[a.key].score100 <= 40; });
@@ -181,6 +187,8 @@
       '<p class="tier-note">' + t.note + '</p>' +
       (contra ? '<p class="contra"><strong>Your sharpest contradiction:</strong> ' + contra + '</p>' : '') +
       '</div>' +
+
+      hypocrisyHtml(hypo) +
 
       '<div class="align">' +
       '<h3>You are most likely to align with</h3>' +
@@ -315,6 +323,35 @@
     return '<div class="stakes">' + callout + '<span class="stakes-label">What ' + a.name + ' would have taken from you</span>' + inner + '</div>';
   }
 
+  function optLabel(r) {
+    var o = D.OPTIONS.filter(function (x) { return x.value === r; })[0];
+    return o ? o.label : "—";
+  }
+  function hypocrisyHtml(hypo) {
+    if (!hypo.measured) return "";
+    var ht = S.hypoTier(hypo.score100);
+    var flips = hypo.sets.filter(function (s) { return s.spread >= 2; });
+    var body;
+    if (flips.length) {
+      body = '<div class="hypo-sets">' + flips.map(function (s) {
+        return '<div class="hypo-set">' +
+          '<div class="hypo-q">' + s.label + '</div>' +
+          '<div class="hypo-items">' + s.items.map(function (x) {
+            return '<div class="hypo-item"><span class="hypo-tag">' + x.tag + '</span><span class="hypo-ans">' + optLabel(x.r) + '</span></div>';
+          }).join("") + '</div>' +
+          '</div>';
+      }).join("") + '</div>';
+    } else {
+      body = '<p class="tier-note">No double standards detected — you answered the mirror-image cases the same way. That is the rare part.</p>';
+    }
+    return '<div class="hypo">' +
+      '<div class="overall"><span class="overall-label">Hypocrisy</span>' +
+      '<span class="overall-num alt">' + hypo.score100 + '<i>/100</i></span></div>' +
+      '<h3 class="hypo-name">' + ht.name + '</h3>' +
+      '<p class="tier-note">' + ht.note + '</p>' +
+      body +
+      '</div>';
+  }
   function axisByKey(key) {
     return D.AXES.filter(function (a) { return a.key === key; })[0];
   }
@@ -338,7 +375,7 @@
       var opt = D.OPTIONS.filter(function (o) { return o.value === r; })[0];
       var chose = opt ? opt.label : "—";
       var authoritarian = q.reverse ? r < 0 : r > 0;
-      var stmt = q.type === "quote" ? "“" + q.quote + "”" : q.prompt;
+      var stmt = (q.story ? '<em>' + q.story + '</em> ' : "") + (q.type === "quote" ? "“" + q.quote + "”" : q.prompt);
       var src = q.type === "quote"
         ? '<div class="replay-src"><strong>' + q.author + '</strong> — ' + q.source + '</div>'
         : '';

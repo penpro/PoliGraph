@@ -72,6 +72,10 @@ button.ghost:hover { border-color: var(--pg-accent); color: #fff; }
   font-size: 27px; line-height: 1.4; font-style: italic; margin: 0 0 16px;
   padding: 4px 0 4px 22px; border-left: 3px solid var(--pg-accent); color: #fff;
 }
+.story {
+  font-size: 19px; line-height: 1.5; color: #dcdce0; margin: 0 0 18px;
+  padding: 16px 18px; background: var(--pg-panel); border: 1px solid var(--pg-grid); border-radius: var(--pg-radius);
+}
 .opts { display: flex; flex-direction: column; gap: 10px; }
 .opt {
   background: var(--pg-panel); color: var(--pg-text); border: 1px solid var(--pg-grid);
@@ -88,6 +92,17 @@ button.ghost:hover { border-color: var(--pg-accent); color: #fff; }
 .overall-num i { font-size: 20px; font-weight: 400; color: var(--pg-dim); font-style: normal; }
 .tier-note { color: var(--pg-dim); margin: 0 0 12px; }
 .contra { background: var(--pg-panel-2); border-radius: 8px; padding: 14px 16px; margin: 0; font-size: 15px; }
+
+.hypo { background: var(--pg-panel); border: 1px solid var(--pg-grid); border-radius: var(--pg-radius); padding: 24px; margin-bottom: 20px; }
+.overall-num.alt { color: #E24B4A; }
+.hypo-name { margin: 4px 0 6px; font-size: 24px; }
+.hypo-sets { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+.hypo-set { border-left: 3px solid var(--pg-flag); padding-left: 16px; }
+.hypo-q { font-size: 15px; color: #f2f2f3; font-weight: 500; margin-bottom: 10px; }
+.hypo-items { display: flex; flex-direction: column; gap: 6px; }
+.hypo-item { display: flex; justify-content: space-between; gap: 12px; background: var(--pg-panel-2); border-radius: 8px; padding: 8px 12px; }
+.hypo-tag { font-size: 14px; color: var(--pg-dim); }
+.hypo-ans { font-size: 14px; font-weight: 700; color: #fff; white-space: nowrap; }
 
 .align { background: var(--pg-panel); border: 1px solid var(--pg-grid); border-radius: var(--pg-radius); padding: 24px; margin-bottom: 20px; }
 .align-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
