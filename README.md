@@ -30,6 +30,10 @@ The intro offers a **24-question quick test** (4 balanced items per axis, listed
 - **Keep axes symmetric.** For every right-baited item add a left-baited mirror. The `bait` field on each question exists so this stays auditable.
 - **Alignment is mechanism-based, never identity-based.** Matches come only from the coercive axes a taker endorsed.
 
+## Deploying updates
+
+Assets are referenced with a `?v=N` query in `index.html` to defeat GitHub Pages' CDN/browser caching. **After changing any JS/CSS, bump every `?v=N` in `index.html`** (e.g. `?v=2` → `?v=3`) so returning visitors get the new code instead of a stale cached copy.
+
 ## Nothing is stored
 
 No login, no analytics, no server. Answers live in memory and vanish on refresh. The result card is generated client-side and only saved if the taker clicks download.
