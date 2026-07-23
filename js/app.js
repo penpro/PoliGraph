@@ -11,8 +11,43 @@
     "op1","op2","op3","op4", "ri1","ri2","ri3","ri4", "pd1","pd2","pd3","pd4"
   ];
   function questionsFor(m) {
-    return m === "long" ? D.QUESTIONS.slice()
+    var list = m === "long" ? D.QUESTIONS.slice()
       : D.QUESTIONS.filter(function (q) { return CORE_IDS.indexOf(q.id) >= 0; });
+    return interleave(list);
+  }
+
+  /* Deterministic PRNG (fixed seed) -> the shuffle is well-mixed but identical every run,
+     so the order is stable across sessions and can't drift. */
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function seededShuffle(arr, rng) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  /* Round-robin across axes (each axis shuffled internally, axis visiting-order shuffled once).
+     With even per-axis counts this guarantees no two adjacent questions share an axis, so a
+     taker can't spot the theme and game their answers. */
+  function interleave(list) {
+    var rng = mulberry32(0x50A11);
+    var groups = {};
+    D.AXES.forEach(function (a) { groups[a.key] = []; });
+    list.forEach(function (q) { groups[q.axis].push(q); });
+    var keys = D.AXES.map(function (a) { return a.key; });
+    keys.forEach(function (k) { groups[k] = seededShuffle(groups[k], rng); });
+    var axisOrder = seededShuffle(keys, rng);
+    var out = [], more = true;
+    while (more) {
+      more = false;
+      axisOrder.forEach(function (k) { if (groups[k].length) { out.push(groups[k].shift()); more = true; } });
+    }
+    return out;
   }
 
   var TRAIT_SHORT = {
