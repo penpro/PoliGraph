@@ -412,7 +412,38 @@ window.PG_DATA = (function () {
       reveal:"An 'emergency' that routes around the vote is exactly how temporary power quietly becomes permanent." },
     { id:"pd12", axis:"personalist_deference", type:"principle", weight:2, reverse:false, bait:"both",
       prompt:"Big historical progress comes from great leaders, so we should trust them over rigid rules.",
-      reveal:"The great-man theory is the mission statement of every dictatorship. Rules outlast men for a reason." }
+      reveal:"The great-man theory is the mission statement of every dictatorship. Rules outlast men for a reason." },
+
+    /* ===== Coupled pairs (long version only): a judgment, then the quiet leap to state force.
+       prime:true items set up disapproval and are NOT scored; the follow-up scores the axis.
+       `couple` keeps the two adjacent and in order even under shuffling. ===== */
+    { id:"ca_1", axis:"coercive_moralism", type:"principle", weight:0, reverse:false, bait:"both", prime:true, couple:"ca",
+      story:"Susie sleeps around, rarely bothers with protection, and treats abortion as her routine way to keep living exactly how she likes.",
+      prompt:"This is irresponsible behavior that's bad for society.", reveal:"" },
+    { id:"ca_2", axis:"coercive_moralism", type:"principle", weight:3, reverse:false, bait:"right", couple:"ca", coupleLabel:"Susie's lifestyle → restrict it by law",
+      prompt:"The government should place restrictions to discourage this kind of behavior.",
+      reveal:"Watch the slide you just made: 'I disapprove' became 'the state should step in.' That is precisely how a private moral judgment turns into a law over other people's bodies." },
+
+    { id:"cb_1", axis:"epistemic_closure", type:"principle", weight:0, reverse:false, bait:"both", prime:true, couple:"cb",
+      story:"A man turns up at rallies and loudly says vicious, openly racist things about minorities.",
+      prompt:"What he's doing is harmful and wrong.", reveal:"" },
+    { id:"cb_2", axis:"epistemic_closure", type:"principle", weight:3, reverse:false, bait:"left", couple:"cb", coupleLabel:"Racist speech → arrest and prosecute for it",
+      prompt:"The government should be able to arrest and prosecute people for saying things like this.",
+      reveal:"You slid from 'that's harmful' to 'lock him up for words.' That's a hate-speech law — you just built the cage and handed someone else the key to decide what fills it." },
+
+    { id:"cc_1", axis:"retributive_impulse", type:"principle", weight:0, reverse:false, bait:"both", prime:true, couple:"cc",
+      story:"A man legally owns dozens of guns and thousands of rounds, and posts furious, unhinged rants about the government online.",
+      prompt:"This person is alarming and probably dangerous.", reveal:"" },
+    { id:"cc_2", axis:"retributive_impulse", type:"principle", weight:3, reverse:false, bait:"left", couple:"cc", coupleLabel:"An alarming gun owner → seize his guns before any crime",
+      prompt:"The government should be able to seize his guns before he has broken any law.",
+      reveal:"You went from 'he alarms me' to 'take his property before any crime.' Punishing on suspicion is the machine — it just isn't always aimed at people you distrust." },
+
+    { id:"cd_1", axis:"outgroup_punishment", type:"principle", weight:0, reverse:false, bait:"both", prime:true, couple:"cd",
+      story:"An undocumented family has lived and worked in the same town for fifteen years; their kids were born there and know no other home.",
+      prompt:"The fact that they're here illegally is still a real problem.", reveal:"" },
+    { id:"cd_2", axis:"outgroup_punishment", type:"principle", weight:3, reverse:false, bait:"right", couple:"cd", coupleLabel:"A long-settled undocumented family → deport them",
+      prompt:"The government should deport families in this situation.",
+      reveal:"You moved from 'it's a problem' to 'tear this specific family out.' Notice how much easier the abstract felt than the human — that gap is exactly where policy hides its cost." }
   ];
 
   /* Consistency sets — the same underlying principle tested against different targets/sympathies.

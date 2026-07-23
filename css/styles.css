@@ -104,6 +104,11 @@ button.ghost:hover { border-color: var(--pg-accent); color: #fff; }
 .hypo-tag { font-size: 14px; color: var(--pg-dim); }
 .hypo-ans { font-size: 14px; font-weight: 700; color: #fff; white-space: nowrap; }
 
+.leaps { background: var(--pg-panel); border: 1px solid var(--pg-grid); border-left: 3px solid var(--pg-flag); border-radius: 0 var(--pg-radius) var(--pg-radius) 0; padding: 20px 22px; margin-bottom: 20px; }
+.leaps.ok { border-left-color: var(--pg-ok); }
+.leap-list { margin: 10px 0 0; padding-left: 20px; }
+.leap-list li { font-size: 16px; color: #f2f2f3; margin-bottom: 6px; }
+
 .align { background: var(--pg-panel); border: 1px solid var(--pg-grid); border-radius: var(--pg-radius); padding: 24px; margin-bottom: 20px; }
 .align-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
 .chip { background: var(--pg-panel-2); color: var(--pg-dim); border: 1px solid var(--pg-grid); border-radius: 999px; padding: 8px 14px 8px 8px; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }

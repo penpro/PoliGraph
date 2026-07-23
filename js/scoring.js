@@ -10,6 +10,7 @@ window.PG_SCORING = (function () {
     D.AXES.forEach(function (a) { byAxis[a.key] = { sum: 0, maxAbs: 0 }; });
 
     D.QUESTIONS.forEach(function (q) {
+      if (q.prime) return; // setup/priming items don't score an axis
       var r = answers[q.id];
       if (typeof r !== "number") return; // only score questions the taker actually saw (short vs long)
       var signed = q.reverse ? -r : r;
@@ -103,6 +104,26 @@ window.PG_SCORING = (function () {
     return { name: "Pure team sport", note: "You don't have principles here — you have a side, and the rule just follows it." };
   }
 
+  /* Coupled pairs: a prime (judgment) followed by a follow-up (state force). A "leap" is when the
+     taker agreed something is bad AND agreed the government should act — turning disapproval into law. */
+  function computeCoercionLeaps(answers) {
+    var byCouple = {};
+    D.QUESTIONS.forEach(function (q) { if (q.couple) { (byCouple[q.couple] = byCouple[q.couple] || []).push(q); } });
+    var leaps = [], restraint = 0, measured = 0;
+    Object.keys(byCouple).forEach(function (cid) {
+      var items = byCouple[cid];
+      var prime = items.filter(function (q) { return q.prime; })[0];
+      var force = items.filter(function (q) { return !q.prime; })[0];
+      if (!prime || !force) return;
+      var pr = answers[prime.id], fr = answers[force.id];
+      if (typeof pr !== "number" || typeof fr !== "number") return;
+      measured++;
+      if (pr > 0 && fr > 0) leaps.push({ label: force.coupleLabel || cid });
+      else if (pr > 0 && fr <= 0) restraint++;
+    });
+    return { leaps: leaps, restraint: restraint, measured: measured };
+  }
+
   return { computeScores: computeScores, matchAlignments: matchAlignments, tier: tier, contradiction: contradiction,
-           computeHypocrisy: computeHypocrisy, hypoTier: hypoTier };
+           computeHypocrisy: computeHypocrisy, hypoTier: hypoTier, computeCoercionLeaps: computeCoercionLeaps };
 })();

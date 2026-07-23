@@ -40,16 +40,31 @@
      taker can't spot the theme and game their answers. */
   function interleave(list) {
     var rng = mulberry32(0x50A11);
+    // Build units: a couple is one atomic, ordered unit (setup then follow-up); singles are their own.
+    var coupleUnits = {}, units = [];
+    list.forEach(function (q) {
+      if (q.couple) {
+        if (!coupleUnits[q.couple]) { coupleUnits[q.couple] = { axis: q.axis, items: [] }; units.push(coupleUnits[q.couple]); }
+        coupleUnits[q.couple].items.push(q);
+      } else {
+        units.push({ axis: q.axis, items: [q] });
+      }
+    });
     var groups = {};
     D.AXES.forEach(function (a) { groups[a.key] = []; });
-    list.forEach(function (q) { groups[q.axis].push(q); });
+    units.forEach(function (u) { (groups[u.axis] = groups[u.axis] || []).push(u); });
     var keys = D.AXES.map(function (a) { return a.key; });
     keys.forEach(function (k) { groups[k] = seededShuffle(groups[k], rng); });
     var axisOrder = seededShuffle(keys, rng);
     var out = [], more = true;
     while (more) {
       more = false;
-      axisOrder.forEach(function (k) { if (groups[k].length) { out.push(groups[k].shift()); more = true; } });
+      axisOrder.forEach(function (k) {
+        if (groups[k] && groups[k].length) {
+          groups[k].shift().items.forEach(function (q) { out.push(q); });
+          more = true;
+        }
+      });
     }
     return out;
   }
@@ -173,6 +188,7 @@
     var matches = S.matchAlignments(result.vec, 3);
     var contra = S.contradiction(answers);
     var hypo = S.computeHypocrisy(answers);
+    var leaps = S.computeCoercionLeaps(answers);
     lastResult = result; lastMatches = matches;
     lastHigh = D.AXES.filter(function (a) { return result.scores[a.key].score100 >= 60; });
     lastLow = D.AXES.filter(function (a) { return result.scores[a.key].score100 <= 40; });
@@ -189,6 +205,7 @@
       '</div>' +
 
       hypocrisyHtml(hypo) +
+      leapsHtml(leaps) +
 
       '<div class="align">' +
       '<h3>You are most likely to align with</h3>' +
@@ -352,6 +369,18 @@
       body +
       '</div>';
   }
+  function leapsHtml(cl) {
+    if (!cl.measured) return "";
+    if (!cl.leaps.length) {
+      return '<div class="leaps ok">' +
+        '<span class="stakes-label" style="color:var(--pg-ok)">Judgment vs. force</span>' +
+        '<p class="tier-note">You disapproved of things without reaching for the government to ban them. That restraint is the whole difference between having values and imposing them on everyone else.</p></div>';
+    }
+    return '<div class="leaps">' +
+      '<span class="stakes-label">From “I disapprove” to “there should be a law”</span>' +
+      '<p class="tier-note">Each of these is a moment you turned a personal judgment into a call for state force:</p>' +
+      '<ul class="leap-list">' + cl.leaps.map(function (l) { return '<li>' + l.label + '</li>'; }).join("") + '</ul></div>';
+  }
   function axisByKey(key) {
     return D.AXES.filter(function (a) { return a.key === key; })[0];
   }
@@ -374,7 +403,7 @@
       var r = answers[q.id];
       var opt = D.OPTIONS.filter(function (o) { return o.value === r; })[0];
       var chose = opt ? opt.label : "—";
-      var authoritarian = q.reverse ? r < 0 : r > 0;
+      var authoritarian = q.prime ? false : (q.reverse ? r < 0 : r > 0);
       var stmt = (q.story ? '<em>' + q.story + '</em> ' : "") + (q.type === "quote" ? "“" + q.quote + "”" : q.prompt);
       var src = q.type === "quote"
         ? '<div class="replay-src"><strong>' + q.author + '</strong> — ' + q.source + '</div>'
