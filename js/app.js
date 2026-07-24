@@ -181,7 +181,7 @@
   }
 
   /* ---------- Results ---------- */
-  var lastResult, lastMatches, lastHigh, lastLow;
+  var lastResult, lastMatches, lastHigh, lastLow, lastHypo;
   function results() {
     var result = S.computeScores(answers);
     var t = S.tier(result.overall100);
@@ -189,7 +189,7 @@
     var contra = S.contradiction(answers);
     var hypo = S.computeHypocrisy(answers);
     var leaps = S.computeCoercionLeaps(answers);
-    lastResult = result; lastMatches = matches;
+    lastResult = result; lastMatches = matches; lastHypo = hypo;
     lastHigh = D.AXES.filter(function (a) { return result.scores[a.key].score100 >= 60; });
     lastLow = D.AXES.filter(function (a) { return result.scores[a.key].score100 <= 40; });
     screen(
@@ -238,10 +238,18 @@
           '<button id="go-long" class="primary">Take the long test · ' + questionsFor("long").length + ' questions</button>' +
           '</div>'
         : '<p class="fine long-note">You took the full ' + questionsFor("long").length + '-question version — this is as dialed-in as it gets.</p>') +
-      '<div class="actions">' +
-      '<button id="card" class="primary">Download result card</button>' +
-      '<button id="again">Take it again</button>' +
+      '<div class="share">' +
+      '<h3>Share your result</h3>' +
+      '<div class="share-row">' +
+      '<button id="sh-share" class="primary">Share my result</button>' +
+      '<button id="sh-fb" class="ghost">Facebook</button>' +
+      '<button id="sh-x" class="ghost">X</button>' +
+      '<button id="sh-dl" class="ghost">Download image</button>' +
+      '<button id="sh-copy" class="ghost">Copy link</button>' +
       '</div>' +
+      '<p class="fine share-note">On a phone, “Share my result” posts your actual result card straight to Facebook, Instagram, or Messages. On desktop, Facebook shows a generic preview — use “Download image” and attach it to your post to share your real result.</p>' +
+      '</div>' +
+      '<div class="actions"><button id="again">Take it again</button></div>' +
       '<p class="fine">Educational satire. Matches are based only on the coercive mechanisms you endorsed, never on identity. Nothing was stored.</p>' +
       '</section>'
     );
@@ -255,7 +263,11 @@
       };
     });
     document.getElementById("again").onclick = intro;
-    document.getElementById("card").onclick = downloadCard;
+    document.getElementById("sh-share").onclick = shareResult;
+    document.getElementById("sh-fb").onclick = fbShare;
+    document.getElementById("sh-x").onclick = xShare;
+    document.getElementById("sh-dl").onclick = downloadCard;
+    document.getElementById("sh-copy").onclick = copyLink;
     var gl = document.getElementById("go-long");
     if (gl) gl.onclick = function () { start("long"); };
 
@@ -417,11 +429,48 @@
     }).join("");
   }
 
-  function downloadCard() {
-    var url = V.makeCard(lastResult, S.tier(lastResult.overall100), lastMatches[0]);
-    var a = document.createElement("a");
-    a.href = url; a.download = "poligraph-result.png"; a.click();
+  function cardCanvas() {
+    return V.makeCardCanvas(lastResult, S.tier(lastResult.overall100), lastMatches[0], lastHypo);
   }
+  function shareUrl() { return location.origin + location.pathname; }
+  function shareText() {
+    return "PoliGraph pegged my authoritarian instinct at " + lastResult.overall100 +
+      "/100 and says I line up with " + lastMatches[0].align.name + ". Where do you land?";
+  }
+  function downloadCard() {
+    var a = document.createElement("a");
+    a.href = cardCanvas().toDataURL("image/png");
+    a.download = "poligraph-result.png"; a.click();
+  }
+  function shareResult() {
+    var canvas = cardCanvas();
+    if (!canvas.toBlob) { fbShare(); return; }
+    canvas.toBlob(function (blob) {
+      var file = new File([blob], "poligraph-result.png", { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: "My PoliGraph result", text: shareText(), url: shareUrl() }).catch(function () {});
+      } else {
+        downloadCard();
+        openPopup("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(shareUrl()));
+      }
+    }, "image/png");
+  }
+  function fbShare() {
+    downloadCard();
+    openPopup("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(shareUrl()));
+  }
+  function xShare() {
+    openPopup("https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText()) + "&url=" + encodeURIComponent(shareUrl()));
+  }
+  function copyLink() {
+    var btn = document.getElementById("sh-copy");
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl()).then(function () {
+        if (btn) { btn.textContent = "Copied!"; setTimeout(function () { btn.textContent = "Copy link"; }, 1500); }
+      }).catch(function () {});
+    }
+  }
+  function openPopup(url) { window.open(url, "_blank", "noopener,noreferrer,width=670,height=600"); }
 
   intro();
 })();

@@ -103,26 +103,44 @@ window.PG_VIEWS = (function () {
     draw();
   }
 
-  /* ---------- Shareable result card (canvas -> PNG) ---------- */
-  function makeCard(result, tierObj, topMatch) {
-    var W = 800, H = 418, c = document.createElement("canvas"); c.width = W; c.height = H;
+  /* ---------- Shareable result card (canvas, 1200x630 = social ratio) ---------- */
+  function makeCardCanvas(result, tierObj, topMatch, hypo) {
+    var W = 1200, H = 630, c = document.createElement("canvas"); c.width = W; c.height = H;
     var x = c.getContext("2d");
     x.fillStyle = "#141416"; x.fillRect(0, 0, W, H);
-    x.fillStyle = "#D85A30"; x.font = "bold 30px sans-serif"; x.fillText("PoliGraph", 40, 58);
-    x.fillStyle = "#9a9a9a"; x.font = "15px sans-serif"; x.fillText("authoritarian instinct, measured across six axes", 40, 84);
-    x.fillStyle = "#fff"; x.font = "bold 26px sans-serif"; x.fillText(tierObj.name, 40, 132);
-    x.fillStyle = "#ddd"; x.font = "17px sans-serif"; x.fillText("Nearest historical match: " + topMatch.align.name + " (" + topMatch.matchPct + "%)", 40, 168);
-    // mini bars
-    var by = 210;
+    x.fillStyle = "#D85A30"; x.fillRect(0, 0, W, 10);
+    x.textAlign = "left";
+    x.fillStyle = "#D85A30"; x.font = "bold 48px sans-serif"; x.fillText("PoliGraph", 64, 100);
+    x.fillStyle = "#9a9a9f"; x.font = "24px sans-serif"; x.fillText("which world leaders do you line up with?", 66, 138);
+
+    x.fillStyle = "#9a9a9f"; x.font = "20px sans-serif"; x.fillText("AUTHORITARIAN INSTINCT", 64, 226);
+    x.fillStyle = "#D85A30"; x.font = "bold 104px sans-serif";
+    var num = String(result.overall100); x.fillText(num, 64, 322);
+    var nw = x.measureText(num).width;
+    x.fillStyle = "#9a9a9f"; x.font = "30px sans-serif"; x.fillText("/100", 64 + nw + 12, 322);
+    x.fillStyle = "#ffffff"; x.font = "bold 36px sans-serif"; x.fillText(tierObj.name, 64, 384);
+
+    x.fillStyle = "#dddddd"; x.font = "26px sans-serif"; x.fillText("Aligns with:  " + topMatch.align.name + " (" + topMatch.matchPct + "%)", 64, 448);
+    if (hypo && hypo.measured) {
+      x.fillStyle = "#E24B4A"; x.font = "26px sans-serif"; x.fillText("Hypocrisy:  " + hypo.score100 + "/100", 64, 490);
+    }
+
+    // mini bars on the right
+    var bx = 680, bw = 456, by = 210;
     D.AXES.forEach(function (a, i) {
-      var pct = result.scores[a.key].score100, yy = by + i * 30;
-      x.fillStyle = "#9a9a9a"; x.font = "13px sans-serif"; x.textAlign = "left"; x.fillText(a.short, 40, yy + 12);
-      x.fillStyle = "#2a2a2e"; x.fillRect(180, yy, 520, 16);
-      x.fillStyle = a.color; x.fillRect(180, yy, 520 * pct / 100, 16);
-      x.fillStyle = "#fff"; x.font = "12px sans-serif"; x.fillText(String(pct), 712, yy + 13);
+      var pct = result.scores[a.key].score100, yy = by + i * 52;
+      x.fillStyle = "#9a9a9f"; x.font = "17px sans-serif"; x.textAlign = "left"; x.fillText(a.short, bx, yy - 6);
+      x.fillStyle = "#ffffff"; x.textAlign = "right"; x.fillText(String(pct), bx + bw, yy - 6); x.textAlign = "left";
+      x.fillStyle = "#2a2a2e"; x.fillRect(bx, yy, bw, 20);
+      x.fillStyle = a.color; x.fillRect(bx, yy, bw * pct / 100, 20);
     });
-    return c.toDataURL("image/png");
+
+    x.fillStyle = "#6a6a6f"; x.font = "22px sans-serif"; x.fillText("penpro.github.io/PoliGraph", 64, H - 44);
+    return c;
+  }
+  function makeCard(result, tierObj, topMatch, hypo) {
+    return makeCardCanvas(result, tierObj, topMatch, hypo).toDataURL("image/png");
   }
 
-  return { bars: bars, radar2d: radar2d, radar3d: radar3d, makeCard: makeCard };
+  return { bars: bars, radar2d: radar2d, radar3d: radar3d, makeCard: makeCard, makeCardCanvas: makeCardCanvas };
 })();
